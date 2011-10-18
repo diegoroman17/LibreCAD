@@ -572,23 +572,46 @@ bool	RS_Ellipse::createFrom4P(const RS_VectorSolutions& sol)
 *
 *@Author Dongxu Li
 */
-bool	RS_Ellipse::createCenter3P(const RS_VectorSolutions& sol) {
-    if(sol.getNumber()<4) return false; //need one center and 3 points on ellipse
+bool	RS_Ellipse::createCenter3Points(const RS_VectorSolutions& sol) {
+    if(sol.getNumber()<3) return false; //need one center and 3 points on ellipse
     QVector<QVector<double> > mt;
-    int mSize(3);
+    int mSize(sol.getNumber() -1);
+
     mt.resize(mSize);
-    for(int i=0;i<mSize;i++){//form the linear equation
-        mt[i].resize(4);
-        RS_Vector vp(sol.get(i)-sol.get(0)); //the first vector is center
-        mt[i][0]=vp.x*vp.x;
-        mt[i][1]=vp.x*vp.y;
-        mt[i][2]=vp.y*vp.y;
-        mt[i][3]=1.;
+    QVector<double> dn(mSize);
+    switch(mSize){
+    case 2:
+        for(int i=0;i<mSize;i++){//form the linear equation
+            mt[i].resize(mSize+1);
+            RS_Vector vp(sol.get(i)-sol.get(0)); //the first vector is center
+            mt[i][0]=vp.x*vp.x;
+            mt[i][1]=vp.y*vp.y;
+            mt[i][2]=1.;
+        }
+        if ( ! RS_Math::linearSolver(mt,dn) ) return false;
+        if( dn[0]<RS_TOLERANCE*RS_TOLERANCE || dn[1]<RS_TOLERANCE*RS_TOLERANCE) return false;
+        setMajorP(RS_Vector(1./sqrt(dn[0]),0.));
+        setRatio(sqrt(dn[0]/dn[1]));
+        setAngle1(0.);
+        setAngle2(0.);
+        setCenter(sol.get(0));
+        return true;
+        break;
+    case 3:
+        for(int i=0;i<mSize;i++){//form the linear equation
+            mt[i].resize(mSize+1);
+            RS_Vector vp(sol.get(i)-sol.get(0)); //the first vector is center
+            mt[i][0]=vp.x*vp.x;
+            mt[i][1]=vp.x*vp.y;
+            mt[i][2]=vp.y*vp.y;
+            mt[i][3]=1.;
+        }
+        if ( ! RS_Math::linearSolver(mt,dn) ) return false;
+        setCenter(sol.get(0));
+        return createFromQuadratic(dn);
+    default:
+        return false;
     }
-    QVector<double> dn(3);
-    if ( ! RS_Math::linearSolver(mt,dn) ) return false;
-    setCenter(sol.get(0));
-    return createFromQuadratic(dn);
 }
 
 /**create from quadratic form:
