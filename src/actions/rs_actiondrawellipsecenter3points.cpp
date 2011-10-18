@@ -64,6 +64,7 @@ void RS_ActionDrawEllipseCenter3Points::init(int status) {
     if (status==SetCenter) {
         points.clean();
     }
+    drawSnapper();
 }
 
 
@@ -84,7 +85,7 @@ void RS_ActionDrawEllipseCenter3Points::trigger() {
         document->endUndoCycle();
     }
 
-    graphicView->moveRelativeZero(ellipse.getCenter());
+    graphicView->moveRelativeZero(ellipse->getCenter());
     graphicView->redraw(RS2::RedrawDrawing);
     drawSnapper();
 
@@ -97,15 +98,14 @@ void RS_ActionDrawEllipseCenter3Points::trigger() {
 
 
 void RS_ActionDrawEllipseCenter3Points::mouseMoveEvent(QMouseEvent* e) {
-//    RS_DEBUG->print("RS_ActionDrawEllipseCenter3Points::mouseMoveEvent begin");
-if(getStatus() == SetCenter()) return;
+    //    RS_DEBUG->print("RS_ActionDrawEllipseCenter3Points::mouseMoveEvent begin");
     RS_Vector mouse = snapPoint(e);
+    if(getStatus() == SetCenter) return;
     points.set(getStatus(),mouse);
     if(preparePreview()) {
         switch(getStatus()) {
 
         case SetPoint1:
-        case SetPoint2:
         {
             RS_Circle* circle=new RS_Circle(preview, cData);
             deletePreview();
@@ -113,6 +113,8 @@ if(getStatus() == SetCenter()) return;
             drawPreview();
         }
             break;
+
+        case SetPoint2:
         case SetPoint3:
         {
             deletePreview();

@@ -572,7 +572,7 @@ bool	RS_Ellipse::createFrom4P(const RS_VectorSolutions& sol)
 *
 *@Author Dongxu Li
 */
-bool	RS_Ellipse::createCenter3Points(const RS_VectorSolutions& sol) {
+bool	RS_Ellipse::createFromCenter3Points(const RS_VectorSolutions& sol) {
     if(sol.getNumber()<3) return false; //need one center and 3 points on ellipse
     QVector<QVector<double> > mt;
     int mSize(sol.getNumber() -1);
@@ -583,7 +583,7 @@ bool	RS_Ellipse::createCenter3Points(const RS_VectorSolutions& sol) {
     case 2:
         for(int i=0;i<mSize;i++){//form the linear equation
             mt[i].resize(mSize+1);
-            RS_Vector vp(sol.get(i)-sol.get(0)); //the first vector is center
+            RS_Vector vp(sol.get(i+1)-sol.get(0)); //the first vector is center
             mt[i][0]=vp.x*vp.x;
             mt[i][1]=vp.y*vp.y;
             mt[i][2]=1.;
@@ -600,7 +600,7 @@ bool	RS_Ellipse::createCenter3Points(const RS_VectorSolutions& sol) {
     case 3:
         for(int i=0;i<mSize;i++){//form the linear equation
             mt[i].resize(mSize+1);
-            RS_Vector vp(sol.get(i)-sol.get(0)); //the first vector is center
+            RS_Vector vp(sol.get(i+1)-sol.get(0)); //the first vector is center
             mt[i][0]=vp.x*vp.x;
             mt[i][1]=vp.x*vp.y;
             mt[i][2]=vp.y*vp.y;
