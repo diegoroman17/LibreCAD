@@ -62,6 +62,18 @@ RS_Vector::RS_Vector(double vx, double vy, double vz) {
 
 
 /**
+ * Constructor for a unit vector from the angle
+ *
+ * @param angle
+ */
+RS_Vector::RS_Vector(double angle) {
+    //RS_DEBUG->print("RS_Vector::RS_Vector");
+    x=cos(angle);
+    y=sin(angle);
+    z=0.;
+    valid = true;
+}
+/**
  * Constructor for a point with given valid flag.
  *
  * @param valid true: a valid vector with default coordinates is created.
@@ -398,6 +410,17 @@ void RS_Vector::operator *= (double s) {
 }
 
 
+
+/**
+ * /= operator
+ */
+void RS_Vector::operator /= (double s) {
+    if(fabs(s)>RS_TOLERANCE) {
+        x /= s;
+        y /= s;
+        z /= s;
+    }
+}
 
 /**
  * == operator

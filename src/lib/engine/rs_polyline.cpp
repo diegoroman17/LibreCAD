@@ -444,23 +444,26 @@ void RS_Polyline::draw(RS_Painter* painter,RS_GraphicView* view,
     if (view==NULL) {
         return;
     }
-	
-	// draw first entity and set correct pen:
+
+    // draw first entity and set correct pen:
     RS_Entity* e = firstEntity(RS2::ResolveNone);
     // We get the pen from the entitycontainer and apply it to the
     // first line so that subsequent line are draw in the right color
     RS_Pen p=this->getPen(true);
-//prevent segfault if polyline is empty
+    double offset(0.);
+    //prevent segfault if polyline is empty
     if (e != NULL) {
         e->setPen(p);
         view->drawEntity(painter, e);
+        offset -= e->getLength();
 
-	// draw subsequent entities with same pen:
+        // draw subsequent entities with same pen:
         for (RS_Entity* e=nextEntity(RS2::ResolveNone);
              e!=NULL;
              e = nextEntity(RS2::ResolveNone)) {
 
             view->drawEntityPlain(painter, e);
+            offset -= e->getLength();
         }
     }
 }

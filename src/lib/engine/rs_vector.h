@@ -41,7 +41,7 @@ class RS_Vector {
 public:
     RS_Vector();
     RS_Vector(double vx, double vy, double vz=0.0);
-    //RS_Vector(double v[]);
+    explicit RS_Vector(double angle);
     explicit RS_Vector(bool valid);
     ~RS_Vector();
 
@@ -72,6 +72,7 @@ public:
     void operator += (const RS_Vector& v);
     void operator -= (const RS_Vector& v);
     void operator *= (double s);
+    void operator /= (double s);
 
     bool operator == (const RS_Vector& v) const;
     bool operator != (const RS_Vector& v) const {

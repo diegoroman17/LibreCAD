@@ -328,17 +328,17 @@ void RS_Spline::draw(RS_Painter* painter, RS_GraphicView* view,
 
     if (e!=NULL) {
         view->drawEntity(painter, e);
-        offset+=e->getLength();
+        offset-=e->getLength();
         //RS_DEBUG->print("offset: %f\nlength was: %f", offset, e->getLength());
-    }
 
-    for (RS_Entity* e=nextEntity(RS2::ResolveNone);
-            e!=NULL;
-            e = nextEntity(RS2::ResolveNone)) {
+        for (RS_Entity* e=nextEntity(RS2::ResolveNone);
+             e!=NULL;
+             e = nextEntity(RS2::ResolveNone)) {
 
-        view->drawEntityPlain(painter, e, -offset);
-        offset+=e->getLength();
-        //RS_DEBUG->print("offset: %f\nlength was: %f", offset, e->getLength());
+            view->drawEntityPlain(painter, e, offset);
+            offset-=e->getLength();
+            //RS_DEBUG->print("offset: %f\nlength was: %f", offset, e->getLength());
+        }
     }
 }
 

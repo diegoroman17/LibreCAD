@@ -67,14 +67,10 @@ void RS_Ellipse::calculateEndpoints() {
 /**
  * Calculates the boundary box of this ellipse.
  */
-void RS_Ellipse::calculateBorders() {
-    RS_DEBUG->print("RS_Ellipse::calculateBorders");
 
-    double radius1 = getMajorRadius();
-    double radius2 = getMinorRadius();
-    double angle = getAngle();
-    //double a1 = ((!isReversed()) ? data.angle1 : data.angle2);
-    //double a2 = ((!isReversed()) ? data.angle2 : data.angle1);
+void RS_Ellipse::calculateBorders() {
+//    RS_DEBUG->print("RS_Ellipse::calculateBorders");
+
     RS_Vector startpoint = getStartpoint();
     RS_Vector endpoint = getEndpoint();
 
@@ -84,70 +80,38 @@ void RS_Ellipse::calculateBorders() {
     double maxY = std::max(startpoint.y, endpoint.y);
 
     RS_Vector vp;
-    // kind of a brute force. TODO: exact calculation
-//    double a = a1;
 
-//    do {
-//        vp.set(data.center.x + radius1 * cos(a),
-//               data.center.y + radius2 * sin(a));
-//        vp.rotate(data.center, angle);
-//
-//        minX = std::min(minX, vp.x);
-//        minY = std::min(minY, vp.y);
-//        maxX = std::max(maxX, vp.x);
-//        maxY = std::max(maxY, vp.y);
-//
-//        a += 0.03;
-//    } while (RS_Math::isAngleBetween(RS_Math::correctAngle(a), a1, a2, false) &&
-//             a<4*M_PI);
-//    std::cout<<"a1="<<a1<<"\ta2="<<a2<<std::endl<<"Old algorithm:\nminX="<<minX<<"\tmaxX="<<maxX<<"\nminY="<<minY<<"\tmaxY="<<maxY<<std::endl;
-
-    // Exact algorithm, based on rotation:
-    // ( r1*cos(a), r2*sin(a)) rotated by angle to
-    // (r1*cos(a)*cos(angle)-r2*sin(a)*sin(angle),r1*cos(a)*sin(angle)+r2*sin(a)*cos(angle))
-    // both coordinates can be further reorganized to the form rr*cos(a+ theta),
-    // with rr and theta angle defined by the coordinates given above
-    double amin,amax;
+    double amin,amax,a;
 //      x range
-    vp.set(radius1*cos(angle),radius2*sin(angle));
+//    vp.set(radius1*cos(angle),radius2*sin(angle));
+    vp.set(getMajorP().x,getRatio()*getMajorP().y);
+    a=vp.angle();
 
-    amin=RS_Math::correctAngle(getAngle1()+vp.angle()); // to the range of 0 to 2*M_PI
-    amax=RS_Math::correctAngle(getAngle2()+vp.angle()); // to the range of 0 to 2*M_PI
-    if( RS_Math::isAngleBetween(M_PI,amin,amax,isReversed()) || fabs(amax-amin) < RS_TOLERANCE) {
-        //if( (amin<=M_PI && delta_a >= M_PI - amin) || (amin > M_PI && delta_a >= 3*M_PI - amin)) {
+    amin=RS_Math::correctAngle(getAngle1()+a); // to the range of 0 to 2*M_PI
+    amax=RS_Math::correctAngle(getAngle2()+a); // to the range of 0 to 2*M_PI
+    if( RS_Math::isAngleBetween(M_PI,amin,amax,isReversed()) ) {
         minX= data.center.x-vp.magnitude();
     }
-//    else
-//       minX=data.center.x +vp.magnitude()*std::min(cos(amin),cos(amin+delta_a));
-    if( RS_Math::isAngleBetween(2.*M_PI,amin,amax,isReversed()) || fabs(amax-amin) < RS_TOLERANCE) {
-        //if( delta_a >= 2*M_PI - amin ) {
+
+    if( RS_Math::isAngleBetween(2.*M_PI,amin,amax,isReversed()) ) {
         maxX= data.center.x+vp.magnitude();
     }
-//    else
-//       maxX= data.center.x+vp.magnitude()*std::max(cos(amin),cos(amin+delta_a));
-//      y range
-    vp.set(radius1*sin(angle),-1*radius2*cos(angle));
-    amin=RS_Math::correctAngle(getAngle1()+vp.angle()); // to the range of 0 to 2*M_PI
-    amax=RS_Math::correctAngle(getAngle2()+vp.angle()); // to the range of 0 to 2*M_PI
-    if( RS_Math::isAngleBetween(M_PI,amin,amax,isReversed()) || fabs(amax-amin) < RS_TOLERANCE) {
-        //if( (amin<=M_PI &&delta_a >= M_PI - amin) || (amin > M_PI && delta_a >= 3*M_PI - amin)) {
+    //y range
+    vp.set(getMajorP().y, -getRatio()*getMajorP().x);
+    a=vp.angle();
+    amin=RS_Math::correctAngle(getAngle1()+a); // to the range of 0 to 2*M_PI
+    amax=RS_Math::correctAngle(getAngle2()+a); // to the range of 0 to 2*M_PI
+    if( RS_Math::isAngleBetween(M_PI,amin,amax,isReversed()) ) {
         minY= data.center.y-vp.magnitude();
     }
-//    else
-//        minY=data.center.y +vp.magnitude()*std::min(cos(amin),cos(amin+delta_a));
-    if( RS_Math::isAngleBetween(2.*M_PI,amin,amax,isReversed()) || fabs(amax-amin) < RS_TOLERANCE) {
-        //if( delta_a >= 2*M_PI - amin ) {
+    if( RS_Math::isAngleBetween(2.*M_PI,amin,amax,isReversed()) ) {
         maxY= data.center.y+vp.magnitude();
     }
-//    else
-//        maxY= data.center.y+vp.magnitude()*std::max(cos(amin),cos(amin+delta_a));
-//std::cout<<"New algorithm:\nminX="<<minX<<"\tmaxX="<<maxX<<"\nminY="<<minY<<"\tmaxY="<<maxY<<std::endl;
 
     minV.set(minX, minY);
     maxV.set(maxX, maxY);
-    RS_DEBUG->print("RS_Ellipse::calculateBorders: OK");
+//    RS_DEBUG->print("RS_Ellipse::calculateBorders: OK");
 }
-
 
 
 RS_VectorSolutions RS_Ellipse::getRefPoints() const {
@@ -737,105 +701,96 @@ void RS_Ellipse::moveRef(const RS_Vector& ref, const RS_Vector& offset) {
 
 
 void RS_Ellipse::draw(RS_Painter* painter, RS_GraphicView* view, double /*patternOffset*/) {
-
+//    std::cout<<"RS_Ellipse::draw(): begin\n";
     if (painter==NULL || view==NULL) {
         return;
     }
-
-
-    if (getPen().getLineType()==RS2::SolidLine ||
-            ! isSelected() ||
-            view->getDrawingMode()==RS2::ModePreview) {
-
-        painter->drawEllipse(view->toGui(getCenter()),
-                             getMajorRadius() * view->getFactor().x,
-                             getMinorRadius() * view->getFactor().x,
-                             getAngle(),
+    double ra(getMajorRadius()*view->getFactor().x);
+    double rb(getRatio()*ra);
+    if(rb<RS_TOLERANCE) {//ellipse too small
+        painter->drawLine(view->toGui(minV),view->toGui(maxV));
+        return;
+    }
+    double mAngle=getAngle();
+    RS_Vector cp(view->toGui(getCenter()));
+    if ( !isSelected() && (
+             getPen().getLineType()==RS2::SolidLine ||
+             view->getDrawingMode()==RS2::ModePreview)) {
+        painter->drawEllipse(cp,
+                             ra, rb,
+                             mAngle,
                              getAngle1(), getAngle2(),
                              isReversed());
-    } else {
-        double styleFactor = getStyleFactor(view);
-        if (styleFactor<0.0) {
-            painter->drawEllipse(view->toGui(getCenter()),
-                                 getMajorRadius() * view->getFactor().x,
-                                 getMinorRadius() * view->getFactor().x,
-                                 getAngle(),
-                                 getAngle1(), getAngle2(),
-                                 isReversed());
-            return;
-        }
-
-        // Pattern:
-        RS_LineTypePattern* pat;
-        if (isSelected()) {
-            pat = &patternSelected;
-        } else {
-            pat = view->getPattern(getPen().getLineType());
-        }
-
-        if (pat==NULL) {
-            return;
-        }
-
-        // Pen to draw pattern is always solid:
-        RS_Pen pen = painter->getPen();
-        pen.setLineType(RS2::SolidLine);
-        painter->setPen(pen);
-
-        double* da;     // array of distances in x.
-        int i;          // index counter
-
-        double length = getAngleLength();
-
-        // create pattern:
-        da = new double[pat->num];
-
-        double tot=0.0;
-        i=0;
-        bool done = false;
-        double curA = getAngle1();
-        double curR;
-        RS_Vector cp = view->toGui(getCenter());
-        double r1 = getMajorRadius() * view->getFactor().x;
-        double r2 = getMinorRadius() * view->getFactor().x;
-
-        do {
-            curR = sqrt(RS_Math::pow(getMinorRadius()*cos(curA), 2.0)
-                        + RS_Math::pow(getMajorRadius()*sin(curA), 2.0));
-
-            if (curR>1.0e-6) {
-                da[i] = fabs(pat->pattern[i] * styleFactor) / curR;
-                if (pat->pattern[i] * styleFactor > 0.0) {
-
-                    if (tot+fabs(da[i])<length) {
-                        painter->drawEllipse(cp,
-                                             r1, r2,
-                                             getAngle(),
-                                             curA,
-                                             curA + da[i],
-                                             false);
-                    } else {
-                        painter->drawEllipse(cp,
-                                             r1, r2,
-                                             getAngle(),
-                                             curA,
-                                             getAngle2(),
-                                             false);
-                    }
-                }
-            }
-            curA+=da[i];
-            tot+=fabs(da[i]);
-            done=tot>length;
-
-            i++;
-            if (i>=pat->num) {
-                i=0;
-            }
-        } while(!done);
-
-        delete[] da;
+        return;
     }
+
+    // Pattern:
+    RS_LineTypePattern* pat;
+    if (isSelected()) {
+        pat = &patternSelected;
+    } else {
+        pat = view->getPattern(getPen().getLineType());
+    }
+
+    if (pat==NULL) {
+        RS_DEBUG->print(RS_Debug::D_WARNING, "Invalid pattern for Ellipse");
+        return;
+    }
+
+    // Pen to draw pattern is always solid:
+    RS_Pen pen = painter->getPen();
+    pen.setLineType(RS2::SolidLine);
+    double a1(RS_Math::correctAngle(getAngle1()));
+    double a2(RS_Math::correctAngle(getAngle2()));
+    if (isReversed()) std::swap(a1,a2);
+    if(a2 <a1+RS_TOLERANCE_ANGLE) a2 +=2.*M_PI;
+    painter->setPen(pen);
+    int i(0),j(0);
+    double* ds = new double[pat->num>0?pat->num:0];
+    if(pat->num>0){
+        while( i<pat->num){
+            ds[i]=pat->pattern[i] ;//pattern length
+            i++;
+        }
+        j=i;
+    }else {
+        delete[] ds;
+        RS_DEBUG->print(RS_Debug::D_WARNING,"Invalid pattern when drawing ellipse");
+        painter->drawEllipse(cp,
+                             ra, rb,
+                             mAngle,
+                             a1,
+                             a2,
+                             false);
+        return;
+    }
+
+    double tot=0.0;
+    double curA(a1);
+    double da,a3;
+    bool notDone(true);
+
+    for(i=0;notDone;i=(i+1)%j) {//draw patterned ellipse
+
+        a3 = curA + fabs(ds[i])/RS_Vector(ra*sin(curA),rb*cos(curA)).magnitude();
+        if(a3>a2){
+            a3=a2;
+            notDone=false;
+        }
+        tot += da;
+        if (ds[i]>0.){
+            painter->drawEllipse(cp,
+                                 ra, rb,
+                                 mAngle,
+                                 curA,
+                                 a3,
+                                 false);
+        }
+
+        curA=a3;
+    }
+
+    delete[] ds;
 }
 
 

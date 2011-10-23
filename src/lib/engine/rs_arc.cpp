@@ -603,115 +603,125 @@ void RS_Arc::stretch(RS_Vector firstCorner,
 }
 
 
-
 void RS_Arc::draw(RS_Painter* painter, RS_GraphicView* view,
-                  double /*patternOffset*/) {
+                  double patternOffset) {
 
     if (painter==NULL || view==NULL) {
         return;
     }
-
+    RS_Vector cp=view->toGui(getCenter());
+    double ra=getRadius()*view->getFactor().x;
     //double styleFactor = getStyleFactor();
 
     // simple style-less lines
-    if (getPen().getLineType()==RS2::SolidLine ||
-            isSelected() ||
-            view->getDrawingMode()==RS2::ModePreview) {
+    if ( !isSelected() && (
+             getPen().getLineType()==RS2::SolidLine ||
+             view->getDrawingMode()==RS2::ModePreview)) {
 
-        painter->drawArc(view->toGui(getCenter()),
-                         getRadius() * view->getFactor().x,
+        painter->drawArc(cp,
+                         ra,
                          getAngle1(), getAngle2(),
                          isReversed());
-    } else {
-        double styleFactor = getStyleFactor(view);
-		if (styleFactor<0.0) {
-        	painter->drawArc(view->toGui(getCenter()),
-                         getRadius() * view->getFactor().x,
-                         getAngle1(), getAngle2(),
-                         isReversed());
-			return;
-		}
-
-        // Pattern:
-        RS_LineTypePattern* pat;
-        if (isSelected()) {
-            pat = &patternSelected;
-        } else {
-            pat = view->getPattern(getPen().getLineType());
-        }
-
-        if (pat==NULL) {
-            return;
-        }
-
-        if (getRadius()<1.0e-6) {
-            return;
-        }
-
-        // Pen to draw pattern is always solid:
-        RS_Pen pen = painter->getPen();
-        pen.setLineType(RS2::SolidLine);
-        painter->setPen(pen);
-
-        double a1;
-        double a2;
-        if (data.reversed) {
-            a2 = getAngle1();
-            a1 = getAngle2();
-        } else {
-            a1 = getAngle1();
-            a2 = getAngle2();
-        }
-
-        double* da;     // array of distances in x.
-        int i;          // index counter
-
-        double length = getAngleLength();
-
-        // create scaled pattern:
-        da = new double[pat->num];
-
-        for (i=0; i<pat->num; ++i) {
-            da[i] = fabs(pat->pattern[i] * styleFactor) / getRadius();
-        }
-
-        double tot=0.0;
-        i=0;
-        bool done = false;
-        double curA = a1;
-        //double cx = getCenter().x * factor.x + offsetX;
-        //double cy = - a->getCenter().y * factor.y + getHeight() - offsetY;
-        RS_Vector cp = view->toGui(getCenter());
-        double r = getRadius() * view->getFactor().x;
-
-        do {
-            if (pat->pattern[i] > 0.0) {
-                if (tot+da[i]<length) {
-                    painter->drawArc(cp, r,
-                                     curA,
-                                     curA + da[i],
-                                     false);
-                } else {
-                    painter->drawArc(cp, r,
-                                     curA,
-                                     a2,
-                                     false);
-                }
-            }
-            curA+=da[i];
-            tot+=da[i];
-            done=tot>length;
-
-            i++;
-            if (i>=pat->num) {
-                i=0;
-            }
-        } while(!done);
-
-        delete[] da;
+        return;
     }
-}
+//    double styleFactor = getStyleFactor(view);
+    //        if (styleFactor<0.0) {
+    //            painter->drawArc(cp,
+    //                             ra,
+    //                             getAngle1(), getAngle2(),
+    //                             isReversed());
+    //            return;
+    //        }
 
+    // Pattern:
+    RS_LineTypePattern* pat;
+    if (isSelected()) {
+        pat = &patternSelected;
+    } else {
+        pat = view->getPattern(getPen().getLineType());
+    }
+
+    if (pat==NULL|| ra<0.5) {//avoid division by zero from small ra
+        RS_DEBUG->print(RS_Debug::D_WARNING, "Invalid line pattern, drawing arc using solid line");
+        painter->drawArc(cp, ra,
+                         getAngle1(),getAngle2(),
+                         isReversed());
+        return;
+    }
+
+    patternOffset=remainder(patternOffset - getLength()-0.5*pat->totalLength,pat->totalLength)+0.5*pat->totalLength;
+
+    if (ra<RS_TOLERANCE_ANGLE){
+        return;
+    }
+
+    // Pen to draw pattern is always solid:
+    RS_Pen pen = painter->getPen();
+    pen.setLineType(RS2::SolidLine);
+    painter->setPen(pen);
+
+
+
+    // create scaled pattern:
+    double* da;
+    double patternSegmentLength(pat->totalLength);
+    int i(0);          // index counter
+    if(pat->num>0) {
+        da=new double[pat->num];
+        while(i<pat->num){
+            //        da[j] = pat->pattern[i++] * styleFactor;
+            //fixme, stylefactor needed
+            da[i] =isReversed()? -fabs(pat->pattern[i]):fabs(pat->pattern[i]);
+            da[i]/=ra;
+            i++;
+        }
+    }else {
+        //invalid pattern
+
+        RS_DEBUG->print(RS_Debug::D_WARNING, "RS_Arc::draw(): invalid line pattern\n");
+        painter->drawArc(cp,
+                         ra,
+                         getAngle1(), getAngle2(),
+                         isReversed());
+        return;
+    }
+
+    //    bool done = false;
+    double total=remainder(patternOffset-0.5*patternSegmentLength,patternSegmentLength)-0.5*patternSegmentLength;
+
+    double a1(RS_Math::correctAngle(getAngle1()));
+    double a2(RS_Math::correctAngle(getAngle2()));
+
+    if(isReversed()) {//always draw from a1 to a2, so, patternOffset is is automatic
+        if(a1<a2+RS_TOLERANCE_ANGLE) a2 -= 2.*M_PI;
+        total = a1 - total/ra; //in angle
+    }else{
+        if(a2<a1+RS_TOLERANCE_ANGLE) a2 += 2.*M_PI;
+        total = a1 + total/ra; //in angle
+    }
+    double limit(fabs(a1-a2));
+    double t2;
+    double a11,a21;
+
+    for(int j=0; fabs(total-a1)<limit ;j=(j+1)%i) {
+        t2=total+da[j];
+
+        if(pat->pattern[j]>0.0) {
+
+            if (fabs(t2-a2)<limit) {
+                a11=(fabs(total-a2)<limit)?total:a1;
+                a21=(fabs(t2-a1)<limit)?t2:a2;
+                painter->drawArc(cp, ra,
+                                 a11,
+                                 a21,
+                                 isReversed());
+            }
+        }
+        total=t2;
+    }
+
+    delete[] da;
+}
 
 
 /**
