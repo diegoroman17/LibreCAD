@@ -35,6 +35,7 @@
 #include "rs_text.h"
 #include "rs_settings.h"
 #include "rs_dialogfactory.h"
+#include "rs_layer.h"
 
 
 
@@ -1218,6 +1219,12 @@ void RS_GraphicView::drawEntity(RS_Painter *painter, RS_Entity* e, double& patte
     // entity is not visible:
     if (!e->isVisible()) {
         return;
+    }
+    if( isPrintPreview() ) {
+        //do not draw help layer on print preview
+        if( e->getLayer() != NULL){
+            if(e->getLayer()->isHelpLayer()) return;
+        }
     }
 
     // test if the entity is in the viewport

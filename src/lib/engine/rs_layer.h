@@ -46,13 +46,13 @@ public:
     RS_LayerData() {}
 
     RS_LayerData(const QString& name,
-	             const RS_Pen& pen,
-				 bool frozen,
-				 bool locked) {
-		this->name = name;
-		this->pen = pen;
-		this->frozen = frozen;
-		this->locked = locked;
+                 const RS_Pen& pen,
+                 bool frozen,
+                 bool locked) {
+        this->name = name;
+        this->pen = pen;
+        this->frozen = frozen;
+        this->locked = locked;
     }
 
     //! Layer name
@@ -61,14 +61,17 @@ public:
     //! default pen for this layer
     RS_Pen pen;
 
-	//! Frozen flag
-	bool frozen;
-	
-	//! Locked flag
-	bool locked;
+    //! Frozen flag
+    bool frozen;
 
-	//! Converted flag (cam)
-	bool converted;
+    //! Locked flag
+    bool locked;
+
+    //! Converted flag (cam)
+    bool converted;
+
+    //! Help Layer, a help layer has entities of infinite length, and will never be printed out
+    bool helpLayer;
 };
 
 
@@ -82,10 +85,10 @@ class RS_Layer {
 public:
     explicit RS_Layer(const QString& name);
     //RS_Layer(const char* name);
-	
+
     RS_Layer* clone() {
-		return new RS_Layer(*this);
-	}
+        return new RS_Layer(*this);
+    }
 
     /** sets a new name for this layer. */
     void setName(const QString& name) {
@@ -113,23 +116,23 @@ public:
      */
     bool isFrozen() const {
         return data.frozen;
-		//getFlag(RS2::FlagFrozen);
+        //getFlag(RS2::FlagFrozen);
     }
 
-	/**
-	 * @retval true the layer has been converted already
-	 * @retval false the layer still needs to be converted
-	 */
+    /**
+  * @retval true the layer has been converted already
+  * @retval false the layer still needs to be converted
+  */
     bool isConverted() const {
-		return data.converted;
-	}
+        return data.converted;
+    }
 
-	/**
-	 * Sets the converted flag
-	 */
-	void setConverted(bool c) {
-		data.converted = c;
-	}
+    /**
+  * Sets the converted flag
+  */
+    void setConverted(bool c) {
+        data.converted = c;
+    }
 
     /**
      * Toggles the visibility of this layer.
@@ -137,7 +140,7 @@ public:
      */
     void toggle() {
         //toggleFlag(RS2::FlagFrozen);
-		data.frozen = !data.frozen;
+        data.frozen = !data.frozen;
     }
 
     /**
@@ -146,7 +149,7 @@ public:
      * @param freeze true: freeze, false: defreeze
      */
     void freeze(bool freeze) {
-		data.frozen = freeze;
+        data.frozen = freeze;
         /*if (freeze) {
             setFlag(RS2::FlagFrozen);
         } else {
@@ -159,44 +162,53 @@ public:
      */
     void toggleLock() {
         //toggleFlag(RS2::FlagFrozen);
-		data.locked = !data.locked;
+        data.locked = !data.locked;
     }
-	
-	/**
+
+    /**
      * Locks/Unlocks this layer.
      *
      * @param l true: lock, false: unlock
      */
-	void lock(bool l) {
-		data.locked = l;
-	}
+    void lock(bool l) {
+        data.locked = l;
+    }
 
-	/**
-	 * return the LOCK state of the Layer
+    /**
+  * return the LOCK state of the Layer
      */
-	bool isLocked() {
-		return data.locked;
-	}
-
+    bool isLocked() {
+        return data.locked;
+    }
+    /**
+      whether the layer is a help layer
+      */
+    bool isHelpLayer(){
+        return data.helpLayer;
+    }
+    bool setHelpLayer(bool helpLayer){
+        data.helpLayer=helpLayer;
+        return helpLayer;
+    }
     /**
      * Copies all attributes (pen) and the name of the layer.
      */
-	/*
+    /*
     RS_Layer& operator = (const RS_Layer& l) {
         setName(l.getName());
         setPen(l.getPen());
-		setFrozen(l.isFrozen());
+  setFrozen(l.isFrozen());
         return *this;
     }
-	*/
+ */
 
     friend std::ostream& operator << (std::ostream& os, const RS_Layer& l);
 
     //friend class RS_LayerList;
 
 private:
-	//! Layer data
-	RS_LayerData data;
+    //! Layer data
+    RS_LayerData data;
 
 };
 
