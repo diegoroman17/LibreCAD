@@ -2,25 +2,23 @@
 **
 ** This file is part of the LibreCAD project, a 2D CAD program
 **
+**  Copyright (C) 2011 Rallaz, rallazz@gmail.com
 ** Copyright (C) 2010 R. van Twisk (librecad@rvt.dds.nl)
-** Copyright (C) 2001-2003 RibbonSoft. All rights reserved.
 **
 **
 ** This file may be distributed and/or modified under the terms of the
-** GNU General Public License version 2 as published by the Free Software 
-** Foundation and appearing in the file gpl-2.0.txt included in the
-** packaging of this file.
+** GNU General Public License as published by the Free Software
+** Foundation either version 2 of the License, or (at your option)
+**  any later version.
 **
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-**
-** This copyright notice MUST APPEAR in all copies of the script!  
 **
 **********************************************************************/
 
@@ -90,11 +88,9 @@ public:
     virtual void addEllipse(const DRW_Ellipse& data);
     virtual void addLWPolyline(const DRW_LWPolyline& data);
     virtual void addText(const DRW_Text& data);
-    virtual void addPolyline(const DRW_Entity& data);
-    virtual void addVertex(const DRW_Entity& data);
-    virtual void addSpline(const DRW_Entity& data);
+    virtual void addPolyline(const DRW_Polyline& data);
+    virtual void addSpline(const DRW_Spline* data);
     virtual void addKnot(const DRW_Entity&) {}
-    virtual void addControlPoint(const DRW_Entity& data);
     virtual void addInsert(const DRW_Insert& data);
     virtual void addTrace(const DRW_Trace& data);
     virtual void addSolid(const DRW_Solid& data);
@@ -115,15 +111,12 @@ public:
                                  const DRW_Entity& edata);
     virtual void addLeader(const DRW_Entity& data);
     virtual void addLeaderVertex(const DRW_Entity& data);
-    virtual void addHatch(const DRW_Entity& data);
-    virtual void addHatchLoop(const DRW_Entity& data);
-    virtual void addHatchEdge(const DRW_Entity& data);
-    virtual void addImage(const DRW_Entity& data);
-    virtual void linkImage(const DRW_Entity& data);
-    virtual void endEntity();
-    virtual void endSequence() {}
+    virtual void addHatch(const DRW_Hatch* data);
+    virtual void addImage(const DRW_Image* data);
+    virtual void linkImage(const DRW_ImageDef* data);
+//    virtual void endSequence() {}
 
-    virtual void add3dFace(const DRW_Entity& data);
+    virtual void add3dFace(const DRW_3Dface& data);
     virtual void addDimOrdinate(const DRW_Entity&, const DRW_Entity&);
     virtual void addComment(const char*);
 
@@ -172,7 +165,7 @@ public:
 	
     void writeImageDef(DL_WriterA& dw, RS_Image* i);
 
-    void setEntityAttributes(RS_Entity* entity, const DRW_Entity& attrib);
+    void setEntityAttributes(RS_Entity* entity, const DRW_Entity* attrib);
     void getEntityAttributes(DRW_Entity* ent, const RS_Entity* entity);
 
     static QString toDxfString(const QString& string);
@@ -205,21 +198,12 @@ private:
     RS_Graphic* graphic;
     /** File name. Used to find out the full path of images. */
     QString file;
-    /** string for concatinating text parts of MTEXT entities. */
-//    QString mtext;
-    /** Pointer to current polyline entity we're adding vertices to. */
-    RS_Polyline* polyline;
     /** Pointer to current spline entity we're adding control points to. */
     RS_Spline* spline;
     /** Pointer to current leader entity we're adding vertices to. */
     RS_Leader* leader;
     /** Pointer to current entity container (either block or graphic) */
     RS_EntityContainer* currentContainer;
-
-    /** Pointer to current hatch or NULL. */
-    RS_Hatch* hatch;
-    /** Pointer to current hatch loop or NULL. */
-    RS_EntityContainer* hatchLoop;
 
     dxfRW *dxf;
     RS_VariableDict variables;

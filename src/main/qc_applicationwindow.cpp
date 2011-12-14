@@ -522,12 +522,13 @@ void QC_ApplicationWindow::initMDI() {
     vb->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     layout->setContentsMargins ( 0, 0, 0, 0 );
     mdiAreaCAD = new QMdiArea(this);
+    activedMdiSubWindow=NULL;
     mdiAreaTab = false;
     layout->addWidget(mdiAreaCAD);
 //    mdiAreaCAD->setScrollBarsEnabled(false);
-    mdiAreaCAD->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    mdiAreaCAD->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    mdiAreaCAD->setFocusPolicy(Qt::StrongFocus);
+    mdiAreaCAD->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    mdiAreaCAD->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    mdiAreaCAD->setFocusPolicy(Qt::ClickFocus);
     mdiAreaCAD->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 #if QT_VERSION >= 0x040800
     mdiAreaCAD->setTabsClosable(true);
@@ -1953,11 +1954,14 @@ void QC_ApplicationWindow::slotWindowActivated(int index){
 void QC_ApplicationWindow::slotWindowActivated(QMdiSubWindow* w) {
 
     RS_DEBUG->print("QC_ApplicationWindow::slotWindowActivated begin");
+
     if(w==NULL) {
         emit windowsChanged(false);
+        activedMdiSubWindow=w;
         return;
     }
-
+    if(w==activedMdiSubWindow) return;
+    activedMdiSubWindow=w;
     QC_MDIWindow* m = qobject_cast<QC_MDIWindow*>(w->widget());
 
 //    QList<QMdiSubWindow*> windows=mdiAreaCAD->subWindowList();
@@ -2094,7 +2098,7 @@ void QC_ApplicationWindow::slotWindowsMenuActivated(bool /*id*/) {
                         m->hide();
                     }else{
                         m->lower();
-                        m->widget()->lower();
+//                        m->widget()->lower();
                     }
                 }
 //                qobject_cast<QC_MDIWindow*>(m)->zoomAuto();
@@ -2118,6 +2122,7 @@ void QC_ApplicationWindow::slotZoomAuto() {
         qobject_cast<QC_MDIWindow*>(window->widget())->zoomAuto();
     }
 }
+
 /**
  * Cascade MDI windows
  */
@@ -2148,12 +2153,9 @@ void QC_ApplicationWindow::slotCascade() {
                 mh += h;
                 mih += i*h;
         }
-        mi /= windows.size();
-        mi2 /= windows.size();
-        mw /= windows.size();
-        miw /= windows.size();
-        mh /= windows.size();
-        mih /= windows.size();
+        mi2 *= windows.size();
+        miw *= windows.size();
+        mih *= windows.size();
         double d=1./(mi2 - mi*mi);
         double disX=(miw-mi*mw)*d;
         double disY=(mih-mi*mh)*d;
@@ -2202,28 +2204,24 @@ void QC_ApplicationWindow::slotTileHorizontal() {
     if (windows.count()<=1) {
         return;
     }
-
+    for (int i=0; i<windows.count(); ++i) {
+        QMdiSubWindow *window = windows.at(i);
+        window->lower();
+        window->showNormal();
+    }
     int heightForEach = mdiAreaCAD->height() / windows.count();
     int y = 0;
     for (int i=0; i<windows.count(); ++i) {
         QMdiSubWindow *window = windows.at(i);
-/* RVT_PORT
-                if (window->testWState(WState_Maximized)) {
-            // prevent flicker
-            window->hide();
-            window->showNormal();
-        } */
         int preferredHeight = window->minimumHeight()
                               + window->parentWidget()->baseSize().height();
         int actHeight = qMax(heightForEach, preferredHeight);
 
-        //window->parentWidget()->resize(workspace->width(), actHeight);
-        window->setGeometry(0, y,
-                                            mdiAreaCAD->width(), actHeight);
-//        window->setGeometry(geo.x(),geo.y(),width,height);
+        window->setGeometry(0, y, mdiAreaCAD->width(), actHeight);
          qobject_cast<QC_MDIWindow*>(window->widget())->zoomAuto();
         y+=actHeight;
     }
+    mdiAreaCAD->activeSubWindow()->raise();
 }
 
 
@@ -2239,28 +2237,24 @@ void QC_ApplicationWindow::slotTileVertical() {
     if (windows.count()<=1) {
         return;
     }
-
+    for (int i=0; i<windows.count(); ++i) {
+        QMdiSubWindow *window = windows.at(i);
+        window->lower();
+        window->showNormal();
+    }
     int widthForEach = mdiAreaCAD->width() / windows.count();
     int x = 0;
     for (int i=0; i<windows.count(); ++i) {
         QMdiSubWindow *window = windows.at(i);
-/* RVT_PORT
-                if (window->testWState(WState_Maximized)) {
-            // prevent flicker
-            window->hide();
-            window->showNormal();
-        } */
         int preferredWidth = window->minimumWidth()
                               + window->parentWidget()->baseSize().width();
         int actWidth = qMax(widthForEach, preferredWidth);
 
-        //window->parentWidget()->resize(workspace->width(), actHeight);
         window->setGeometry(x, 0, actWidth, mdiAreaCAD->height());
-//        window->setGeometry(geo.x(),geo.y(),width,height);
          qobject_cast<QC_MDIWindow*>(window->widget())->zoomAuto();
         x+=actWidth;
     }
-
+    mdiAreaCAD->activeSubWindow()->raise();
 }
 
 void QC_ApplicationWindow::slotToggleTab() {
@@ -2271,12 +2265,13 @@ void QC_ApplicationWindow::slotToggleTab() {
         QMdiSubWindow* active=mdiAreaCAD->activeSubWindow();
         for(int i=0;i<windows.size();i++){
             QMdiSubWindow* m=windows.at(i);
-            m->showMaximized();
+            m->hide();
             if(m!=active){
                 m->lower();
             }else{
                 m->raise();
             }
+            m->showMaximized();
             qobject_cast<QC_MDIWindow*>(m->widget())->zoomAuto();
         }
 
@@ -2921,6 +2916,7 @@ void QC_ApplicationWindow::slotFileClose() {
 //        }
     }
     mdiAreaCAD->closeActiveSubWindow();
+    activedMdiSubWindow=NULL;
 }
 
 

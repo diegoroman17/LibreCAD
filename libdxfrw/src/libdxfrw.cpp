@@ -349,6 +349,26 @@ bool dxfRW::writeSolid(DRW_Solid *ent){
     return true;
 }
 
+bool dxfRW::write3dface(DRW_3Dface *ent){
+    writer->writeString(0, "3DFACE");
+    writeEntity(ent);
+    writer->writeString(100, "AcDbFace");
+    writer->writeDouble(10, ent->x);
+    writer->writeDouble(20, ent->y);
+    writer->writeDouble(30, ent->z);
+    writer->writeDouble(11, ent->bx);
+    writer->writeDouble(21, ent->by);
+    writer->writeDouble(31, ent->bz);
+    writer->writeDouble(12, ent->cx);
+    writer->writeDouble(22, ent->cy);
+    writer->writeDouble(32, ent->cz);
+    writer->writeDouble(13, ent->dx);
+    writer->writeDouble(23, ent->dy);
+    writer->writeDouble(33, ent->dz);
+    writer->writeInt16(70, ent->invisibleflag);
+    return true;
+}
+
 bool dxfRW::writeLWPolyline(DRW_LWPolyline *ent){
     writer->writeString(0, "LWPOLYLINE");
     writeEntity(ent);
@@ -358,7 +378,7 @@ bool dxfRW::writeLWPolyline(DRW_LWPolyline *ent){
     writer->writeInt16(70, ent->flags);
     writer->writeDouble(43, ent->width);
     for (int i = 0;  i< ent->vertexnum; i++){
-        DRW_Vertex *v = ent->vertlist.at(i);
+        DRW_Vertex2D *v = ent->vertlist.at(i);
         writer->writeDouble(10, v->x);
         writer->writeDouble(20, v->y);
         if (v->stawidth != 0)
@@ -900,8 +920,18 @@ bool dxfRW::processEntities(bool isblock) {
             processInsert();
         } else if (nextentity == "LWPOLYLINE") {
             processLWPolyline();
+        } else if (nextentity == "POLYLINE") {
+            processPolyline();
         } else if (nextentity == "TEXT") {
             processText();
+        } else if (nextentity == "HATCH") {
+            processHatch();
+        } else if (nextentity == "SPLINE") {
+            processSpline();
+        } else if (nextentity == "3DFACE") {
+            process3dface();
+        } else if (nextentity == "IMAGE") {
+            processImage();
         } else {
             if (reader->readRec(&code, !binary)){
                 if (code == 0)
@@ -971,6 +1001,27 @@ bool dxfRW::processSolid() {
         }
         default:
             solid.parseCode(code, reader);
+            break;
+        }
+    }
+    return true;
+}
+
+bool dxfRW::process3dface() {
+    DBG("dxfRW::process3dface");
+    int code;
+    DRW_3Dface face;
+    while (reader->readRec(&code, !binary)) {
+        DBG(code); DBG("\n");
+        switch (code) {
+        case 0: {
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            iface->add3dFace(face);
+            return true;  //found new entity or ENDSEC, terminate
+        }
+        default:
+            face.parseCode(code, reader);
             break;
         }
     }
@@ -1103,6 +1154,56 @@ bool dxfRW::processLWPolyline() {
     return true;
 }
 
+bool dxfRW::processPolyline() {
+    DBG("dxfRW::processPolyline");
+    int code;
+    DRW_Polyline pl;
+    while (reader->readRec(&code, !binary)) {
+        DBG(code); DBG("\n");
+        switch (code) {
+        case 0: {
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            if (nextentity != "VERTEX") {
+            iface->addPolyline(pl);
+            return true;  //found new entity or ENDSEC, terminate
+            } else {
+                processVertex(&pl);
+            }
+        }
+        default:
+            pl.parseCode(code, reader);
+            break;
+        }
+    }
+    return true;
+}
+
+bool dxfRW::processVertex(DRW_Polyline *pl) {
+    DBG("dxfRW::processVertex");
+    int code;
+    DRW_Vertex *v = new DRW_Vertex();
+    while (reader->readRec(&code, !binary)) {
+        DBG(code); DBG("\n");
+        switch (code) {
+        case 0: {
+            pl->appendVertex(v);
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            if (nextentity == "SEQEND") {
+            return true;  //found SEQEND no more vertex, terminate
+            } else if (nextentity == "VERTEX"){
+                v = new DRW_Vertex(); //another vertex
+            }
+        }
+        default:
+            v->parseCode(code, reader);
+            break;
+        }
+    }
+    return true;
+}
+
 bool dxfRW::processText() {
     DBG("dxfRW::processText");
     int code;
@@ -1124,21 +1225,119 @@ bool dxfRW::processText() {
     return true;
 }
 
+bool dxfRW::processHatch() {
+    DBG("dxfRW::processHatch");
+    int code;
+    DRW_Hatch hatch;
+    while (reader->readRec(&code, !binary)) {
+        DBG(code); DBG("\n");
+        switch (code) {
+        case 0: {
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            iface->addHatch(&hatch);
+            return true;  //found new entity or ENDSEC, terminate
+        }
+        default:
+            hatch.parseCode(code, reader);
+            break;
+        }
+    }
+    return true;
+}
+
+
+bool dxfRW::processSpline() {
+    DBG("dxfRW::processSpline");
+    int code;
+    DRW_Spline sp;
+    while (reader->readRec(&code, !binary)) {
+        DBG(code); DBG("\n");
+        switch (code) {
+        case 0: {
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            iface->addSpline(&sp);
+            return true;  //found new entity or ENDSEC, terminate
+        }
+        default:
+            sp.parseCode(code, reader);
+            break;
+        }
+    }
+    return true;
+}
+
+
+bool dxfRW::processImage() {
+    DBG("dxfRW::processImage");
+    int code;
+    DRW_Image img;
+    while (reader->readRec(&code, !binary)) {
+        DBG(code); DBG("\n");
+        switch (code) {
+        case 0: {
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            iface->addImage(&img);
+            return true;  //found new entity or ENDSEC, terminate
+        }
+        default:
+            img.parseCode(code, reader);
+            break;
+        }
+    }
+    return true;
+}
+
 
 /********* Objects Section *********/
 
 bool dxfRW::processObjects() {
     DBG("dxfRW::processObjects\n");
     int code;
-    string sectionstr;
+    if (!reader->readRec(&code, !binary)){
+        return false;
+    }
+    bool next = true;
+    if (code == 0) {
+            nextentity = reader->getString();
+    } else {
+            return false;  //first record in objects is 0
+   }
+    do {
+        if (nextentity == "ENDSEC") {
+            return true;  //found ENDSEC terminate
+        } else if (nextentity == "IMAGEDEF") {
+            processImageDef();
+        } else {
+            if (reader->readRec(&code, !binary)){
+                if (code == 0)
+                    nextentity = reader->getString();
+            } else
+                return false; //end of file without ENDSEC
+        }
+
+    } while (next);
+    return true;
+}
+
+bool dxfRW::processImageDef() {
+    DBG("dxfRW::processImageDef");
+    int code;
+    DRW_ImageDef img;
     while (reader->readRec(&code, !binary)) {
         DBG(code); DBG("\n");
-        if (code == 0) {
-            sectionstr = reader->getString();
-            DBG(sectionstr); DBG("\n");
-            if (sectionstr == "ENDSEC") {
-                return true;  //found ENDSEC terminate
-            }
+        switch (code) {
+        case 0: {
+            nextentity = reader->getString();
+            DBG(nextentity); DBG("\n");
+            iface->linkImage(&img);
+            return true;  //found new entity or ENDSEC, terminate
+        }
+        default:
+            img.parseCode(code, reader);
+            break;
         }
     }
     return true;

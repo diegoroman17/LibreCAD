@@ -70,16 +70,10 @@ public:
     virtual void addLWPolyline(const DRW_LWPolyline& data) = 0;
 
     /** Called for every polyline start */
-    virtual void addPolyline(const DRW_Entity& data) = 0;
+    virtual void addPolyline(const DRW_Polyline& data) = 0;
 
-    /** Called for every polyline vertex */
-    virtual void addVertex(const DRW_Entity& data) = 0;
-	
     /** Called for every spline */
-    virtual void addSpline(const DRW_Entity& data) = 0;
-	
-	/** Called for every spline control point */
-    virtual void addControlPoint(const DRW_Entity& data) = 0;
+    virtual void addSpline(const DRW_Spline* data) = 0;
 	
 	/** Called for every spline knot value */
     virtual void addKnot(const DRW_Entity& data) = 0;
@@ -91,7 +85,7 @@ public:
     virtual void addTrace(const DRW_Trace& data) = 0;
     
     /** Called for every 3dface start */
-    virtual void add3dFace(const DRW_Entity& data) = 0;
+    virtual void add3dFace(const DRW_3Dface& data) = 0;
 
     /** Called for every solid start */
     virtual void addSolid(const DRW_Solid& data) = 0;
@@ -157,33 +151,18 @@ public:
 	/** 
 	 * Called for every hatch entity. 
 	 */
-    virtual void addHatch(const DRW_Entity& data) = 0;
+    virtual void addHatch(const DRW_Hatch *data) = 0;
 	
 	/** 
 	 * Called for every image entity. 
 	 */
-    virtual void addImage(const DRW_Entity& data) = 0;
+    virtual void addImage(const DRW_Image *data) = 0;
 
 	/**
 	 * Called for every image definition.
 	 */
-        virtual void linkImage(const DRW_Entity& data) = 0;
+        virtual void linkImage(const DRW_ImageDef *data) = 0;
 
-	/** 
-	 * Called for every hatch loop. 
-	 */
-    virtual void addHatchLoop(const DRW_Entity& data) = 0;
-
-	/** 
-	 * Called for every hatch edge entity. 
-	 */
-    virtual void addHatchEdge(const DRW_Entity& data) = 0;
-	
-	/** 
-	 * Called after an entity has been completed.  
-	 */
-    virtual void endEntity() = 0;
-    
     /**
      * Called for every comment in the DXF file (code 999).
      */
@@ -213,7 +192,7 @@ public:
      /**
       * Called when a SEQEND occurs (when a POLYLINE or ATTRIB is done)
       */
-     virtual void endSequence() = 0;
+//     virtual void endSequence() = 0;
 
     /** Sets the current attributes for entities. */
 /*    void setExtrusion(double dx, double dy, double dz, double elevation) {
