@@ -10,15 +10,48 @@
 **  along with this program.  If not, see <http://www.gnu.org/licenses/>.    **
 ******************************************************************************/
 
+#include <cstdlib>
 #include "drw_entities.h"
 #include "dxfreader.h"
 
 
-//! Base class for entities
+//! Calculate arbitary axis
 /*!
-*  Base class for entities
+*   Calculate arbitary axis for aplly extrusions
 *  @author Rallaz
 */
+void DRW_Entity::calculateAxis(DRW_Coord extPoint){
+    if (fabs(extPoint.x) < 0.015625 && fabs(extPoint.y) < 0.015625) {
+        extAxisX.x = extPoint.z;
+        extAxisX.y = 0;
+        extAxisX.z = -extPoint.x;
+    } else {
+        extAxisX.x = -extPoint.y;
+        extAxisX.y = extPoint.x;
+        extAxisX.z = 0;
+    }
+    extAxisX.unitize();
+    extAxisY.x = (extPoint.y * extAxisX.z) - (extAxisX.y * extPoint.z);
+    extAxisY.y = (extPoint.z * extAxisX.x) - (extAxisX.z * extPoint.x);
+    extAxisY.z = (extPoint.x * extAxisX.y) - (extAxisX.x * extPoint.y);
+    extAxisY.unitize();
+}
+//! Extrude a point using arbitary axis
+/*!
+*   apply extrusion in a point using arbitary axis (previous calculated)
+*  @author Rallaz
+*/
+void DRW_Entity::extrudePoint(DRW_Coord extPoint, DRW_Coord *point){
+    double px, py, pz;
+    px = (extAxisX.x*point->x)+(extAxisY.x*point->y)+(extPoint.x*point->z);
+    py = (extAxisX.y*point->x)+(extAxisY.y*point->y)+(extPoint.y*point->z);
+    pz = (extAxisX.z*point->x)+(extAxisY.z*point->y)+(extPoint.z*point->z);
+
+    point->x = px;
+    point->y = py;
+    point->z = pz;
+}
+
 void DRW_Entity::parseCode(int code, dxfReader *reader){
     switch (code) {
     case 5:
@@ -64,25 +97,26 @@ void DRW_Entity::parseCode(int code, dxfReader *reader){
 void DRW_Point::parseCode(int code, dxfReader *reader){
     switch (code) {
     case 10:
-        x = reader->getDouble();
+        basePoint.x = reader->getDouble();
         break;
     case 20:
-        y = reader->getDouble();
+        basePoint.y = reader->getDouble();
         break;
     case 30:
-        z = reader->getDouble();
+        basePoint.z = reader->getDouble();
         break;
     case 39:
         thickness = reader->getDouble();
         break;
     case 210:
-        ex = reader->getDouble();
+        haveExtrusion = true;
+        extPoint.x = reader->getDouble();
         break;
     case 220:
-        ey = reader->getDouble();
+        extPoint.y = reader->getDouble();
         break;
     case 230:
-        ez = reader->getDouble();
+        extPoint.z = reader->getDouble();
         break;
     default:
         DRW_Entity::parseCode(code, reader);
@@ -93,17 +127,24 @@ void DRW_Point::parseCode(int code, dxfReader *reader){
 void DRW_Line::parseCode(int code, dxfReader *reader){
     switch (code) {
     case 11:
-        bx = reader->getDouble();
+        secPoint.x = reader->getDouble();
         break;
     case 21:
-        by = reader->getDouble();
+        secPoint.y = reader->getDouble();
         break;
     case 31:
-        bz = reader->getDouble();
+        secPoint.z = reader->getDouble();
         break;
     default:
         DRW_Point::parseCode(code, reader);
         break;
+    }
+}
+
+void DRW_Circle::applyExtrusion(){
+    if (haveExtrusion) {
+        calculateAxis(extPoint);
+        extrudePoint(extPoint, &basePoint);
     }
 }
 
@@ -149,25 +190,35 @@ void DRW_Ellipse::parseCode(int code, dxfReader *reader){
     }
 }
 
+void DRW_Trace::applyExtrusion(){
+    if (haveExtrusion) {
+        calculateAxis(extPoint);
+        extrudePoint(extPoint, &basePoint);
+        extrudePoint(extPoint, &secPoint);
+        extrudePoint(extPoint, &thirdPoint);
+        extrudePoint(extPoint, &fourPoint);
+    }
+}
+
 void DRW_Trace::parseCode(int code, dxfReader *reader){
     switch (code) {
     case 12:
-        cx = reader->getDouble();
+        thirdPoint.x = reader->getDouble();
         break;
     case 22:
-        cy = reader->getDouble();
+        thirdPoint.y = reader->getDouble();
         break;
     case 32:
-        cz = reader->getDouble();
+        thirdPoint.z = reader->getDouble();
         break;
     case 13:
-        dx = reader->getDouble();
+        fourPoint.x = reader->getDouble();
         break;
     case 23:
-        dy = reader->getDouble();
+        fourPoint.y = reader->getDouble();
         break;
     case 33:
-        dz = reader->getDouble();
+        fourPoint.z = reader->getDouble();
         break;
     default:
         DRW_Line::parseCode(code, reader);
@@ -239,6 +290,19 @@ void DRW_Insert::parseCode(int code, dxfReader *reader){
     }
 }
 
+void DRW_LWPolyline::applyExtrusion(){
+    if (haveExtrusion) {
+        calculateAxis(extPoint);
+        for (unsigned int i=0; i<vertlist.size(); i++) {
+            DRW_Vertex2D *vert = vertlist.at(i);
+            DRW_Coord v(vert->x, vert->y, elevation);
+            extrudePoint(extPoint, &v);
+            vert->x = v.x;
+            vert->y = v.y;
+        }
+    }
+}
+
 void DRW_LWPolyline::parseCode(int code, dxfReader *reader){
     switch (code) {
     case 10: {
@@ -276,13 +340,14 @@ void DRW_LWPolyline::parseCode(int code, dxfReader *reader){
         vertlist.reserve(vertexnum);
         break;
     case 210:
-        ex = reader->getDouble();
+        haveExtrusion = true;
+        extPoint.x = reader->getDouble();
         break;
     case 220:
-        ey = reader->getDouble();
+        extPoint.y = reader->getDouble();
         break;
     case 230:
-        ez = reader->getDouble();
+        extPoint.z = reader->getDouble();
         break;
     default:
         DRW_Entity::parseCode(code, reader);
@@ -334,10 +399,7 @@ void DRW_MText::parseCode(int code, dxfReader *reader){
         text += reader->getString();
         break;
     case 44:
-        height = reader->getDouble();
-        break;
-    case 73:
-        alignV = (DRW::VAlign)reader->getInt32();
+        interlin = reader->getDouble();
         break;
     default:
         DRW_Text::parseCode(code, reader);
@@ -440,23 +502,23 @@ void DRW_Hatch::parseCode(int code, dxfReader *reader){
         }
         break;
     case 10:
-        if (pt) pt->x = reader->getDouble();
+        if (pt) pt->basePoint.x = reader->getDouble();
         else if (pline) {
             plvert = pline->addVertex();
             plvert->x = reader->getDouble();
         }
         break;
     case 20:
-        if (pt) pt->y = reader->getDouble();
+        if (pt) pt->basePoint.y = reader->getDouble();
         else if (plvert) plvert ->y = reader->getDouble();
         break;
     case 11:
-        if (line) line->bx = reader->getDouble();
-        else if (ellipse) ellipse->bx = reader->getDouble();
+        if (line) line->secPoint.x = reader->getDouble();
+        else if (ellipse) ellipse->secPoint.x = reader->getDouble();
         break;
     case 21:
-        if (line) line->by = reader->getDouble();
-        else if (ellipse) ellipse->by = reader->getDouble();
+        if (line) line->secPoint.y = reader->getDouble();
+        else if (ellipse) ellipse->secPoint.y = reader->getDouble();
         break;
     case 40:
         if (arc) arc->radious = reader->getDouble();
@@ -576,7 +638,7 @@ void DRW_Spline::parseCode(int code, dxfReader *reader){
         tolfit = reader->getDouble();
         break;
     case 10: {
-        controlpoint = new DRW_SpPoint();
+        controlpoint = new DRW_Coord();
         controllist.push_back(controlpoint);
         controlpoint->x = reader->getDouble();
         break; }
@@ -589,7 +651,7 @@ void DRW_Spline::parseCode(int code, dxfReader *reader){
             controlpoint->z = reader->getDouble();
         break;
     case 11: {
-        fitpoint = new DRW_SpPoint();
+        fitpoint = new DRW_Coord();
         fitlist.push_back(fitpoint);
         fitpoint->x = reader->getDouble();
         break; }
@@ -646,6 +708,185 @@ void DRW_Image::parseCode(int code, dxfReader *reader){
         break;
     default:
         DRW_Line::parseCode(code, reader);
+        break;
+    }
+}
+
+void DRW_DimensionData::parseCode(int code, dxfReader *reader){
+    switch (code) {
+    case 1:
+        text = reader->getString();
+        break;
+    case 2:
+        name = reader->getString();
+        break;
+    case 3:
+        style = reader->getString();
+        break;
+    case 70:
+        type = reader->getInt32();
+        break;
+    case 71:
+        align = reader->getInt32();
+        break;
+    case 72:
+        linesty = reader->getInt32();
+        break;
+    case 12:
+        clonePoint.x = reader->getDouble();
+        break;
+    case 22:
+        clonePoint.y = reader->getDouble();
+        break;
+    case 32:
+        clonePoint.z = reader->getDouble();
+        break;
+    case 13:
+        def1.x = reader->getDouble();
+        break;
+    case 23:
+        def1.y = reader->getDouble();
+        break;
+    case 33:
+        def1.z = reader->getDouble();
+        break;
+    case 14:
+        def2.x = reader->getDouble();
+        break;
+    case 24:
+        def2.y = reader->getDouble();
+        break;
+    case 34:
+        def2.z = reader->getDouble();
+        break;
+    case 15:
+        circlePoint.x = reader->getDouble();
+        break;
+    case 25:
+        circlePoint.y = reader->getDouble();
+        break;
+    case 35:
+        circlePoint.z = reader->getDouble();
+        break;
+    case 16:
+        arcPoint.x = reader->getDouble();
+        break;
+    case 26:
+        arcPoint.y = reader->getDouble();
+        break;
+    case 36:
+        arcPoint.z = reader->getDouble();
+        break;
+    case 41:
+        linefactor = reader->getDouble();
+        break;
+    case 53:
+        rot = reader->getDouble();
+        break;
+    case 50:
+        angle = reader->getDouble();
+        break;
+    case 52:
+        oblique = reader->getDouble();
+        break;
+    case 40:
+        length = reader->getDouble();
+        break;
+/*    case 51:
+        hdir = reader->getDouble();
+        break;*/
+    default:
+        DRW_Line::parseCode(code, reader);
+        break;
+    }
+}
+
+void DRW_Leader::parseCode(int code, dxfReader *reader){
+    switch (code) {
+    case 3:
+        style = reader->getString();
+        break;
+    case 71:
+        arrow = reader->getInt32();
+        break;
+    case 72:
+        leadertype = reader->getInt32();
+        break;
+    case 73:
+        flag = reader->getInt32();
+        break;
+    case 74:
+        hookline = reader->getInt32();
+        break;
+    case 75:
+        hookflag = reader->getInt32();
+        break;
+    case 76:
+        vertnum = reader->getInt32();
+        break;
+    case 77:
+        coloruse = reader->getInt32();
+        break;
+    case 40:
+        textheight = reader->getDouble();
+        break;
+    case 41:
+        textwidth = reader->getDouble();
+        break;
+    case 10: {
+        vertexpoint = new DRW_Coord();
+        vertexlist.push_back(vertexpoint);
+        vertexpoint->x = reader->getDouble();
+        break; }
+    case 20:
+        if(vertexpoint != NULL)
+            vertexpoint->y = reader->getDouble();
+        break;
+    case 30:
+        if(vertexpoint != NULL)
+            vertexpoint->z = reader->getDouble();
+        break;
+    case 340:
+        handle = reader->getString();
+        break;
+    case 210:
+        extrusionPoint.x = reader->getDouble();
+        break;
+    case 220:
+        extrusionPoint.y = reader->getDouble();
+        break;
+    case 230:
+        extrusionPoint.z = reader->getDouble();
+        break;
+    case 211:
+        horizdir.x = reader->getDouble();
+        break;
+    case 221:
+        horizdir.y = reader->getDouble();
+        break;
+    case 231:
+        horizdir.z = reader->getDouble();
+        break;
+    case 212:
+        offsetblock.x = reader->getDouble();
+        break;
+    case 222:
+        offsetblock.y = reader->getDouble();
+        break;
+    case 232:
+        offsetblock.z = reader->getDouble();
+        break;
+    case 213:
+        offsettext.x = reader->getDouble();
+        break;
+    case 223:
+        offsettext.y = reader->getDouble();
+        break;
+    case 233:
+        offsettext.z = reader->getDouble();
+        break;
+    default:
+        DRW_Entity::parseCode(code, reader);
         break;
     }
 }

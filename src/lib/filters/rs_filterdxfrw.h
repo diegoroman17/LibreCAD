@@ -50,7 +50,7 @@ class DL_WriterA;
  * This format filter class can import and export DXF files.
  * It depends on the dxflib library.
  *
- * @author Andrew Mustun
+ * @author Rallaz
  */
 class RS_FilterDXFRW : public RS_FilterInterface, DRW_Interface {
 public:
@@ -76,7 +76,8 @@ public:
     // Import:
     virtual bool fileImport(RS_Graphic& g, const QString& file, RS2::FormatType /*type*/);
 
-    // Methods from DL_CreationInterface:
+    // Methods from DRW_CreationInterface:
+    virtual void addHeader(const DRW_Header* data);
     virtual void addLType(const DRW_LType& /*data*/){}
     virtual void addLayer(const DRW_Layer& data);
     virtual void addBlock(const DRW_Block& data);
@@ -95,36 +96,21 @@ public:
     virtual void addTrace(const DRW_Trace& data);
     virtual void addSolid(const DRW_Solid& data);
     virtual void addMText(const DRW_MText& data);
-    //virtual void addDimension(const DL_DimensionData& data);
-    RS_DimensionData convDimensionData(const DRW_Entity& data);
-    virtual void addDimAlign(const DRW_Entity& data,
-                             const DRW_Entity& edata);
-    virtual void addDimLinear(const DRW_Entity& data,
-                              const DRW_Entity& edata);
-    virtual void addDimRadial(const DRW_Entity& data,
-                              const DRW_Entity& edata);
-    virtual void addDimDiametric(const DRW_Entity& data,
-                                 const DRW_Entity& edata);
-    virtual void addDimAngular(const DRW_Entity& data,
-                               const DRW_Entity& edata);
-    virtual void addDimAngular3P(const DRW_Entity& data,
-                                 const DRW_Entity& edata);
-    virtual void addLeader(const DRW_Entity& data);
-    virtual void addLeaderVertex(const DRW_Entity& data);
+    RS_DimensionData convDimensionData(const DRW_Dimension* data);
+    virtual void addDimAlign(const DRW_DimAligned *data);
+    virtual void addDimLinear(const DRW_DimLinear *data);
+    virtual void addDimRadial(const DRW_DimRadial *data);
+    virtual void addDimDiametric(const DRW_DimDiametric *data);
+    virtual void addDimAngular(const DRW_DimAngular *data);
+    virtual void addDimAngular3P(const DRW_DimAngular3p *data);
+    virtual void addDimOrdinate(const DRW_DimOrdinate *data);
+    virtual void addLeader(const DRW_Leader *data);
     virtual void addHatch(const DRW_Hatch* data);
     virtual void addImage(const DRW_Image* data);
     virtual void linkImage(const DRW_ImageDef* data);
-//    virtual void endSequence() {}
 
     virtual void add3dFace(const DRW_3Dface& data);
-    virtual void addDimOrdinate(const DRW_Entity&, const DRW_Entity&);
     virtual void addComment(const char*);
-
-    virtual void setVariableVector(const char* key,
-                                   double v1, double v2, double v3, int code);
-    virtual void setVariableString(const char* key, const char* value, int code);
-    virtual void setVariableInt(const char* key, int value, int code);
-    virtual void setVariableDouble(const char* key, double value, int code);
 
     // Export:
     virtual bool fileExport(RS_Graphic& g, const QString& file, RS2::FormatType type);
@@ -198,18 +184,19 @@ private:
     RS_Graphic* graphic;
     /** File name. Used to find out the full path of images. */
     QString file;
-    /** Pointer to current spline entity we're adding control points to. */
-    RS_Spline* spline;
-    /** Pointer to current leader entity we're adding vertices to. */
-    RS_Leader* leader;
     /** Pointer to current entity container (either block or graphic) */
     RS_EntityContainer* currentContainer;
+    /** File codePage. Used to find the text coder. */
+    QString codePage;
+    /** File version. */
+    QString versionStr;
+    int version;
+    /** dimension style. */
+    QString dimStyle;
+    /** text style. */
+    QString textStyle;
 
     dxfRW *dxf;
-    RS_VariableDict variables;
-    bool omitHatchLoop;
-//    bool started;
-}
-;
+};
 
 #endif

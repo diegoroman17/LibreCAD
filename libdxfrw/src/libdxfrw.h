@@ -28,7 +28,7 @@ public:
     dxfRW(const char* name);
     ~dxfRW();
     //read: return 0 if all ok
-    bool read(DRW_Interface *interface);
+    bool read(DRW_Interface *interface, bool ext);
     void setBinary(bool b) {binary = b;}
 
     bool write(DRW_Interface *interface, DRW::Version ver, bool bin);
@@ -68,19 +68,20 @@ private:
     bool processPolyline();
     bool processVertex(DRW_Polyline* pl);
     bool processText();
+    bool processMText();
     bool processHatch();
     bool processSpline();
     bool process3dface();
     bool processImage();
     bool processImageDef();
+    bool processDimension();
+    bool processLeader();
 
 //    bool writeHeader();
     bool writeEntity(DRW_Entity *ent);
     bool writeTables();
     bool writeBlocks();
     bool writeObjects();
-
-    DRW_Header header;
 
 private:
     DRW::Version version;
@@ -89,10 +90,12 @@ private:
     dxfReader *reader;
     dxfWriter *writer;
     DRW_Interface *iface;
+    DRW_Header header;
 //    int section;
     string nextentity;
     int entCount;
     bool wlayer0;
+    bool applyExt;
 
 };
 
