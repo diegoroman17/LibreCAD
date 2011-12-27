@@ -843,6 +843,11 @@ QList<QString> RS_Entity::getAllKeys() {
     return varList.keys();
 }
 
+//! helpLayer contains entities of infinite length, helpLayer doesn't show up in print
+bool RS_Entity::isHelpLayer()  {
+    if(layer != NULL) return layer->isHelpLayer();
+    return false;
+}
 
 /**
  * Dumps the elements data to stdout.

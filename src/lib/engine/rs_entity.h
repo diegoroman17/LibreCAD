@@ -546,6 +546,9 @@ public:
 
     /** Recalculates the borders of this entity. */
     virtual void calculateBorders() = 0;
+    /** whether the entity is on a helpLayer */
+    //! helpLayer contains entities of infinite length, helpLayer doesn't show up in print
+    bool isHelpLayer();
 
 protected:
     //! Entity's parent entity or NULL is this entity has no parent.

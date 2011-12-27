@@ -374,9 +374,12 @@ RS_VectorSolutions RS_Information::getIntersection(RS_Entity* e1,
     for(int i=0;i<ret.getNumber();i++) {
         if ( ! ret.get(i).valid) continue;
         if (onEntities==true) {
-                //ignore intersections not on entity
-            if (!(e1->isPointOnEntity(ret.get(i), tol) &&
-                  e2->isPointOnEntity(ret.get(i), tol))) {
+            //ignore intersections not on entity
+            if (!(
+                        (e1->isHelpLayer() || e1->isPointOnEntity(ret.get(i), tol)) &&
+                        (e2->isHelpLayer() || e2->isPointOnEntity(ret.get(i), tol))
+                        )
+                    ) {
 //                std::cout<<"Ignored intersection "<<ret.get(i)<<std::endl;
 //                std::cout<<"because: e1->isPointOnEntity(ret.get(i), tol)="<<e1->isPointOnEntity(ret.get(i), tol)
 //                    <<"\t(e2->isPointOnEntity(ret.get(i), tol)="<<e2->isPointOnEntity(ret.get(i), tol)<<std::endl;
