@@ -844,7 +844,17 @@ QList<QString> RS_Entity::getAllKeys() {
 }
 
 //! helpLayer contains entities of infinite length, helpLayer doesn't show up in print
-bool RS_Entity::isHelpLayer()  {
+bool RS_Entity::isHelpLayer(bool typeCheck)  {
+    if(typeCheck && getParent() != NULL){
+        //ignore
+        switch(rtti()){
+        case RS2::EntitySpline:
+        case RS2::EntityPolyline:
+            return false;
+            default:
+            break;
+        }
+    }
     if(layer != NULL) return layer->isHelpLayer();
     return false;
 }

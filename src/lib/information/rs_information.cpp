@@ -376,8 +376,8 @@ RS_VectorSolutions RS_Information::getIntersection(RS_Entity* e1,
         if (onEntities==true) {
             //ignore intersections not on entity
             if (!(
-                        (e1->isHelpLayer() || e1->isPointOnEntity(ret.get(i), tol)) &&
-                        (e2->isHelpLayer() || e2->isPointOnEntity(ret.get(i), tol))
+                        (e1->isHelpLayer(true) || e1->isPointOnEntity(ret.get(i), tol)) &&
+                        (e2->isHelpLayer(true) || e2->isPointOnEntity(ret.get(i), tol))
                         )
                     ) {
 //                std::cout<<"Ignored intersection "<<ret.get(i)<<std::endl;
