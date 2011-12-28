@@ -545,12 +545,12 @@ void RS_Line::draw(RS_Painter* painter, RS_GraphicView* view, double& patternOff
             pStart=sol.get(0);
             pEnd=sol.get(1);
             break;
-            case 3:
-            case 4:
+        case 3:
+        case 4:
             pStart=sol.get(0);
             pEnd=sol.get(2);
             break;
-            default:
+        default:
             return;
         }
         direction=pEnd-pStart;
