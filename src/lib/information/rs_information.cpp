@@ -222,7 +222,8 @@ RS_VectorSolutions RS_Information::getIntersection(RS_Entity* e1,
         return ret;
     }
     // a little check to avoid doing unneeded intersections, an attempt to avoid O(N^2) increasing of checking two-entity information
-    if (onEntities
+    if (onEntities &&
+            (! (e1 -> isHelpLayer() || e2 -> isHelpLayer() ))
             && (
                 e1 -> getMin().x > e2 -> getMax().x
                 || e1 -> getMax().x < e2 -> getMin().x
