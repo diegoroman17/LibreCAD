@@ -150,8 +150,8 @@ QG_LayerWidget::QG_LayerWidget(QG_ActionHandler* ah, QWidget* parent,
     layerView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     layerView->setFocusPolicy(Qt::NoFocus);
     layerView->setMinimumHeight(140);
-    layerView->setColumnWidth(QG_LayerModel::VISIBLE, 20);
-    layerView->setColumnWidth(QG_LayerModel::LOCKED, 20);
+    layerView->setColumnWidth(QG_LayerModel::VISIBLE, 16);
+    layerView->setColumnWidth(QG_LayerModel::LOCKED, 16);
     layerView->setColumnWidth(QG_LayerModel::HelpLayer, 20);
     layerView->verticalHeader()->hide();
     layerView->horizontalHeader()->setStretchLastSection(true);
@@ -207,9 +207,6 @@ QG_LayerWidget::QG_LayerWidget(QG_ActionHandler* ah, QWidget* parent,
     //lay->addWidget(caption);
     lay->addLayout(layButtons);
     lay->addWidget(layerView);
-
-    connect(layerView, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(slotActivated(QModelIndex)));
 
     connect(layerView, SIGNAL(clicked(QModelIndex)), this, SLOT(slotActivated(QModelIndex)));
 }
@@ -324,7 +321,8 @@ void QG_LayerWidget::slotActivated(QModelIndex layerIdx /*const QString& layerNa
         actionHandler->slotLayersToggleLock();
         break;
     case QG_LayerModel::HelpLayer:
-        lay->setHelpLayer(!lay->isHelpLayer());
+        actionHandler->slotLayersTogglePrint();
+        break;
     default:
         break;
     }

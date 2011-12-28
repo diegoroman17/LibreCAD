@@ -211,6 +211,7 @@ public slots:
     void slotLayersEdit();
     void slotLayersToggleView();
     void slotLayersToggleLock();
+    void slotLayersTogglePrint();
 
     void slotBlocksDefreezeAll();
     void slotBlocksFreezeAll();

@@ -373,6 +373,7 @@ HEADERS += actions/rs_actionblocksadd.h \
     actions/rs_actionlayersremove.h \
     actions/rs_actionlayerstogglelock.h \
     actions/rs_actionlayerstoggleview.h \
+    actions/rs_actionlayerstoggleprint.h \
     actions/rs_actionlibraryinsert.h \
     actions/rs_actionlockrelativezero.h \
     actions/rs_actionmodifyattributes.h \
@@ -497,6 +498,7 @@ SOURCES += actions/rs_actionblocksadd.cpp \
     actions/rs_actionlayersremove.cpp \
     actions/rs_actionlayerstogglelock.cpp \
     actions/rs_actionlayerstoggleview.cpp \
+    actions/rs_actionlayerstoggleprint.cpp \
     actions/rs_actionlibraryinsert.cpp \
     actions/rs_actionlockrelativezero.cpp \
     actions/rs_actionmodifyattributes.cpp \
