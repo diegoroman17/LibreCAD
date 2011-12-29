@@ -7,7 +7,7 @@
 **
 **
 ** This file may be distributed and/or modified under the terms of the
-** GNU General Public License version 2 as published by the Free Software 
+** GNU General Public License version 2 as published by the Free Software
 ** Foundation and appearing in the file gpl-2.0.txt included in the
 ** packaging of this file.
 **
@@ -15,12 +15,12 @@
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 **
-** This copyright notice MUST APPEAR in all copies of the script!  
+** This copyright notice MUST APPEAR in all copies of the script!
 **
 **********************************************************************/
 
@@ -182,6 +182,13 @@ public:
     }
     /**
       whether the layer is a help layer
+      A help layer has plotF flag=false
+1- LAYER dxf group codes:
+ 70   Standard flags (bit-coded values):
+                  1 = Layer is frozen; otherwise layer is thawed
+                  4 = Layer is locked
+                  ... more codes follow not used by LC
+ 290   Plotting flag. If set to 0, do not plot this layer
       */
     bool isHelpLayer(){
         return data.helpLayer;
