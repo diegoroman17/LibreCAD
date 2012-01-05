@@ -385,6 +385,7 @@ private:
 
     QG_SnapToolBar* snapToolBar;
 
+
     // Toolbar for selecting the current pen
     QG_PenToolBar* penToolBar;
     // Toolbar for CAD tools

@@ -7,88 +7,93 @@ DEFINES += QC_COMPANYNAME="\"LibreCAD\""
 DEFINES += QC_COMPANYKEY="\"LibreCAD\""
 DEFINES += QC_VERSION="\"master\""
 DEFINES += QC_DELAYED_SPLASH_SCREEN=1
-#uncomment to use 2D rs_vector instead of 3D
-#DEFINES += RS_VECTOR2D=1
 
+# uncomment to use 2D rs_vector instead of 3D
+# DEFINES += RS_VECTOR2D=1
 DEFINES += USE_DXFRW=1
+HAS_CPP11 = 
 
-HAS_CPP11 =
-#HAS_CPP11 += 1
-count(HAS_CPP11, 1) {
+# HAS_CPP11 += 1
+count(HAS_CPP11, 1) { 
     DEFINES += HAS_CPP11=1
     QMAKE_CXXFLAGS_DEBUG += -std=c++0x
     QMAKE_CXXFLAGS += -std=c++0x
 }
-
-
 CONFIG += qt \
     warn_on \
     link_prl \
     help
-QMAKE_CXXFLAGS_DEBUG +=
-QMAKE_CXXFLAGS +=
-
+QMAKE_CXXFLAGS_DEBUG += 
+QMAKE_CXXFLAGS += 
 PRE_TARGETDEPS += ../intermediate/libdxfrw.a
 PRE_TARGETDEPS += ../intermediate/libdxflib.a
 PRE_TARGETDEPS += ../intermediate/libjwwlib.a
 PRE_TARGETDEPS += ../intermediate/libfparser.a
 
 # Make translations at the end of the process
-unix {
+unix { 
     # Get SVN revision number
     # SVNREVISION = $$system(svn info -R | grep -o \"Revision: [0-9]*\" | sed -e \"s/Revision: //\" | head -n1)
     # Temporary disabled getting SCM version
-    #SCMREVISION=$$system(git describe --tags)
-    SCMREVISION=$$system([ "$(which git)x" != "x" -a -d .git ] && echo "$(git describe --tags)" || echo "2.0.0alpha1")
-
+    # SCMREVISION=$$system(git describe --tags)
+    SCMREVISION = $$system([ "$(which git)x" != "x" -a -d .git ] && echo "$(git describe --tags)" || echo "2.0.0alpha1")
     DEFINES += QC_SCMREVISION=\"$$SCMREVISION\"
-    macx {
-        CONFIG += x86 x86_64
+    macx { 
+        CONFIG += x86 \
+            x86_64
         TARGET = LibreCAD
         DEFINES += QC_APPDIR="\"LibreCAD\""
         DEFINES += QINITIMAGES_LIBRECAD="qInitImages_LibreCAD"
         RC_FILE = ../res/main/librecad.icns
         DESTDIR = ..
-
-        QMAKE_POST_LINK = cd .. && scripts/postprocess-osx.sh
+        QMAKE_POST_LINK = cd \
+            .. \
+            && \
+            scripts/postprocess-osx.sh
     }
-    else {
+    else { 
         TARGET = librecad
-#fixme , need to detect whether boost is there
+        
+        # fixme , need to detect whether boost is there
         DEFINES += HAS_BOOST=1
         DEFINES += QC_APPDIR="\"librecad\""
         DEFINES += QINITIMAGES_LIBRECAD="qInitImages_librecad"
         RC_FILE = ../res/main/librecad.icns
         DESTDIR = ../unix
-
-#fixme , boost, how to handle boost properly for win32 and unix
-#    CONFIG += link_pkgconfig
-#    PKGCONFIG += boost
-#
-        QMAKE_POST_LINK = cd .. && scripts/postprocess-unix.sh
+        
+        # fixme , boost, how to handle boost properly for win32 and unix
+        # CONFIG += link_pkgconfig
+        # PKGCONFIG += boost
+        QMAKE_POST_LINK = cd \
+            .. \
+            && \
+            scripts/postprocess-unix.sh
     }
 }
-win32 {
+win32 { 
     QMAKE_CFLAGS_THREAD -= -mthreads
     QMAKE_LFLAGS_THREAD -= -mthreads
     TARGET = LibreCAD
     DEFINES += QC_APPDIR="\"LibreCAD\""
     DEFINES += QINITIMAGES_LIBRECAD="qInitImages_LibreCAD"
-
     RC_FILE = ..\\res\\main\\librecad.rc
     DESTDIR = ..\\windows
-    QMAKE_POST_LINK = cd .. && scripts\\postprocess-win.bat
+    QMAKE_POST_LINK = cd \
+        .. \
+        && \
+        scripts\\postprocess-win.bat
 }
-
 
 # Additional libraries to load
 # LIBS += \
 # -Ldxflib/lib -ldxf \
 # Store intermedia stuff somewhere else
-#LIBS += -lboost
-LIBS += \
- -L../intermediate -ldxfrw -ldxflib -ljwwlib -lfparser
-
+# LIBS += -lboost
+LIBS += -L../intermediate \
+    -ldxfrw \
+    -ldxflib \
+    -ljwwlib \
+    -lfparser
 OBJECTS_DIR = ../intermediate/obj
 MOC_DIR = ../intermediate/moc
 RCC_DIR = ../intermediate/rcc
@@ -97,9 +102,7 @@ UI_DIR = ../intermediate/ui
 UI_HEADERS_DIR = ../intermediate/ui
 UI_SOURCES_DIR = ../intermediate/ui
 RESOURCES += ../res/extui/extui.qrc
-
-INCLUDEPATH += \
-    ../dxflib/src \
+INCLUDEPATH += ../dxflib/src \
     ../libdxfrw/src \
     ../jwwlib/src \
     ../fparser \
@@ -122,12 +125,12 @@ INCLUDEPATH += \
     ui/forms \
     res
 
-#depends check, bug#3411161
+# depends check, bug#3411161
 DEPENDPATH = $$INCLUDEPATH
+
 # ################################################################################
 # Library
-HEADERS = \
-    lib/actions/rs_actioninterface.h \
+HEADERS = lib/actions/rs_actioninterface.h \
     lib/actions/rs_preview.h \
     lib/actions/rs_previewactioninterface.h \
     lib/actions/rs_snapper.h \
@@ -218,10 +221,9 @@ HEADERS = \
     lib/scripting/rs_python_wrappers.h \
     lib/scripting/rs_script.h \
     lib/scripting/rs_scriptlist.h \
-    ui/forms/qg_snaptoolbar.h
-
-SOURCES = \
-    lib/actions/rs_actioninterface.cpp \
+    ui/forms/qg_snaptoolbar.h \
+    ui/forms/qg_cadtoolbarlaser.h
+SOURCES = lib/actions/rs_actioninterface.cpp \
     lib/actions/rs_preview.cpp \
     lib/actions/rs_previewactioninterface.cpp \
     lib/actions/rs_snapper.cpp \
@@ -296,7 +298,8 @@ SOURCES = \
     lib/scripting/rs_python_wrappers.cpp \
     lib/scripting/rs_script.cpp \
     lib/scripting/rs_scriptlist.cpp \
-    ui/forms/qg_snaptoolbar.cpp
+    ui/forms/qg_snaptoolbar.cpp \
+    ui/forms/qg_cadtoolbarlaser.cpp
 
 # ################################################################################
 # Command
@@ -427,7 +430,6 @@ HEADERS += actions/rs_actionblocksadd.h \
     actions/rs_actionpolylinetrim.h \
     actions/rs_actionpolylineequidistant.h \
     actions/rs_actionpolylinesegment.h
-
 SOURCES += actions/rs_actionblocksadd.cpp \
     actions/rs_actionblocksattributes.cpp \
     actions/rs_actionblockscreate.cpp \
@@ -550,7 +552,6 @@ SOURCES += actions/rs_actionblocksadd.cpp \
     actions/rs_actionzoomredraw.cpp \
     actions/rs_actionzoomscroll.cpp \
     actions/rs_actionzoomwindow.cpp
-
 RESOURCES += ../res/actions/actions.qrc
 
 # ################################################################################
@@ -647,7 +648,6 @@ HEADERS += ui/qg_actionfactory.h \
     ui/forms/qg_textoptions.h \
     ui/forms/qg_trimamountoptions.h \
     ui/forms/qg_widgetpen.h
-
 SOURCES += ui/qg_actionfactory.cpp \
     ui/qg_actionhandler.cpp \
     ui/qg_blockwidget.cpp \
@@ -738,7 +738,6 @@ SOURCES += ui/qg_actionfactory.cpp \
     ui/forms/qg_textoptions.cpp \
     ui/forms/qg_trimamountoptions.cpp \
     ui/forms/qg_widgetpen.cpp
-
 FORMS = ui/forms/qg_commandwidget.ui \
     ui/forms/qg_arcoptions.ui \
     ui/forms/qg_arctangentialoptions.ui \
@@ -812,14 +811,13 @@ FORMS = ui/forms/qg_commandwidget.ui \
     ui/forms/qg_textoptions.ui \
     ui/forms/qg_trimamountoptions.ui \
     ui/forms/qg_widgetpen.ui \
-    ui/forms/qg_snaptoolbar.ui
-
+    ui/forms/qg_snaptoolbar.ui \
+    ui/forms/qg_cadtoolbarlaser.ui
 RESOURCES += ../res/ui/ui.qrc
 
 # ################################################################################
 # Main
-HEADERS += \
-    main/qc_applicationwindow.h \
+HEADERS += main/qc_applicationwindow.h \
     main/qc_dialogfactory.h \
     main/qc_graphicview.h \
     main/qc_mdiwindow.h \
@@ -831,9 +829,7 @@ HEADERS += \
     plugins/intern/qc_actiongetselect.h \
     plugins/intern/qc_actiongetent.h \
     main/main.h
-
-SOURCES += \
-    main/qc_applicationwindow.cpp \
+SOURCES += main/qc_applicationwindow.cpp \
     main/qc_dialogfactory.cpp \
     main/qc_graphicview.cpp \
     main/qc_mdiwindow.cpp \
@@ -843,7 +839,6 @@ SOURCES += \
     plugins/intern/qc_actiongetselect.cpp \
     plugins/intern/qc_actiongetent.cpp \
     main/main.cpp
-
 RESOURCES += ../res/main/main.qrc
 
 # ################################################################################
@@ -898,7 +893,3 @@ TRANSLATIONS = ../ts/librecad_cs.ts \
 
 # Include any custom.pro files for personal/special builds
 exists( custom.pro ):include( custom.pro )
-
-
-
-

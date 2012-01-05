@@ -426,6 +426,7 @@ public:
      */
     enum ToolBarId {
         ToolBarMain,        /**< Main (menu). */
+        ToolBarLaser,        /**<Laser (menu). */
         ToolBarPoints,      /**< Points. */
         ToolBarLines,       /**< Lines. */
         ToolBarArcs,        /**< Arcs. */

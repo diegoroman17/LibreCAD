@@ -43,6 +43,7 @@ class QG_ActionHandler;
 #include "qg_cadtoolbarsplines.h"
 #include "qg_snaptoolbar.h"
 #include "ui_qg_cadtoolbar.h"
+#include "qg_cadtoolbarlaser.h"
 
 class QG_CadToolBar : public QWidget, public Ui::QG_CadToolBar
 {
@@ -62,6 +63,7 @@ public slots:
     virtual void createSubToolBars( QG_ActionHandler * ah );
     virtual void showToolBar(RS2::ToolBarId id );
     virtual void showToolBarMain();
+    virtual void showToolBarLaser();
     virtual void showToolBarLines();
     virtual void showToolBarArcs();
     virtual void showToolBarEllipses();
@@ -99,6 +101,9 @@ protected:
     //    QG_SnapToolBar* tbSnap;
     QG_CadToolBarSelect* tbSelect;
     QG_CadToolBarPolylines* tbPolylines;
+
+    //Cadilaser: Create toolbarlaser object
+    QG_CadToolBarLaser* tbLaser;
 
 protected slots:
     virtual void languageChange();

@@ -1516,6 +1516,7 @@ void QC_ApplicationWindow::initToolBar() {
         fileToolBar->setSizePolicy(toolBarPolicy);
         fileToolBar->setObjectName ( "FileTB" );
 
+
     editToolBar = new QToolBar( "Edit Operations", this);
         editToolBar->setSizePolicy(toolBarPolicy);
         editToolBar->setObjectName ( "EditTB" );

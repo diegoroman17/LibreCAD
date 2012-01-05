@@ -51,6 +51,7 @@ protected slots:
 private:
     QG_ActionHandler* actionHandler;
 private slots:
+    void on_QG_CadToolBarMain_destroyed();
     void slotDrawText();
     void slotDrawImage();
 };

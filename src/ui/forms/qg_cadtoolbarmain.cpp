@@ -152,3 +152,8 @@ void QG_CadToolBarMain::resetToolBar()
 {
     bHidden->setChecked(true);
 }
+
+void QG_CadToolBarMain::on_QG_CadToolBarMain_destroyed()
+{
+
+}

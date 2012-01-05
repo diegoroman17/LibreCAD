@@ -80,6 +80,7 @@ void QG_CadToolBar::init() {
     tbModify = NULL;
     tbInfo = NULL;
     tbSelect = NULL;
+    tbLaser = NULL;
     //    tbSnap = NULL;
 }
 
@@ -126,12 +127,18 @@ void QG_CadToolBar::contextMenuEvent(QContextMenuEvent *e) {
  */
 void QG_CadToolBar::createSubToolBars(QG_ActionHandler* ah) {
     actionHandler = ah;
-    tbMain = new QG_CadToolBarMain(this);
-    tbMain->setCadToolBar(this);
+
+
+    tbLaser = new QG_CadToolBarLaser(this);
+    tbLaser->setCadToolBar(this);
 
     //    tbPoints = new QG_CadToolBarPoints(this);
     //    tbPoints->setCadToolBar(this);
     //    tbPoints->hide();
+
+    tbMain = new QG_CadToolBarMain(this);
+    tbMain->setCadToolBar(this);
+    tbMain->hide();
 
     tbLines = new QG_CadToolBarLines(this);
     tbLines->setCadToolBar(this);
@@ -178,7 +185,8 @@ void QG_CadToolBar::createSubToolBars(QG_ActionHandler* ah) {
     tbSelect->setCadToolBar(this);
     tbSelect->hide();
 
-    showToolBarMain();
+    //showToolBarMain();
+    showToolBarLaser();
 }
 
 void QG_CadToolBar::hideSubToolBars(){
@@ -234,6 +242,11 @@ void QG_CadToolBar::showToolBar(RS2::ToolBarId id) {
     case RS2::ToolBarMain:
         tbMain->restoreAction();
         newTb = tbMain;
+        break;
+
+    case RS2::ToolBarLaser:
+        tbLaser->restoreAction();
+        newTb = tbLaser;
         break;
         /* not needed any more
     case RS2::ToolBarPoints:
@@ -350,6 +363,10 @@ void QG_CadToolBar::resetToolBar() {
 
 void QG_CadToolBar::showToolBarMain() {
     showToolBar(RS2::ToolBarMain);
+}
+
+void QG_CadToolBar::showToolBarLaser() {
+    showToolBar(RS2::ToolBarLaser);
 }
 
 //void QG_CadToolBar::showToolBarPoints() {
