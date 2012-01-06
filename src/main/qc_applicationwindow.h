@@ -43,6 +43,7 @@ class QG_CadToolBar;
 class QG_SnapToolBar;
 class QC_DialogFactory;
 class QG_LayerWidget;
+class QG_LaserWidget;
 class QG_BlockWidget;
 class QG_CommandWidget;
 class QG_CoordinateWidget;
@@ -332,6 +333,8 @@ private:
 
     /** Layer list widget */
     QG_LayerWidget* layerWidget;
+    /** Laser list widget */
+    QG_LaserWidget* laserWidget;
     /** Block list widget */
     QG_BlockWidget* blockWidget;
     /** Library browser widget */
@@ -341,6 +344,8 @@ private:
     QDockWidget* layerDockWindow;
     /** Block list dock widget */
     QDockWidget* blockDockWindow;
+    /** Laser list dock widget */
+    QDockWidget* laserDockWindow;
     /** Library list dock widget */
     QDockWidget* libraryDockWindow;
 

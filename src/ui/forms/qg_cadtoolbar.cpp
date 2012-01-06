@@ -129,8 +129,8 @@ void QG_CadToolBar::createSubToolBars(QG_ActionHandler* ah) {
     actionHandler = ah;
 
 
-    tbLaser = new QG_CadToolBarLaser(this);
-    tbLaser->setCadToolBar(this);
+    //tbLaser = new QG_CadToolBarLaser(this);
+    //tbLaser->setCadToolBar(this);
 
     //    tbPoints = new QG_CadToolBarPoints(this);
     //    tbPoints->setCadToolBar(this);
@@ -138,7 +138,7 @@ void QG_CadToolBar::createSubToolBars(QG_ActionHandler* ah) {
 
     tbMain = new QG_CadToolBarMain(this);
     tbMain->setCadToolBar(this);
-    tbMain->hide();
+    //tbMain->hide();
 
     tbLines = new QG_CadToolBarLines(this);
     tbLines->setCadToolBar(this);
@@ -185,8 +185,8 @@ void QG_CadToolBar::createSubToolBars(QG_ActionHandler* ah) {
     tbSelect->setCadToolBar(this);
     tbSelect->hide();
 
-    //showToolBarMain();
-    showToolBarLaser();
+    showToolBarMain();
+    //showToolBarLaser();
 }
 
 void QG_CadToolBar::hideSubToolBars(){

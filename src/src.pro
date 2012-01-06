@@ -222,7 +222,8 @@ HEADERS = lib/actions/rs_actioninterface.h \
     lib/scripting/rs_script.h \
     lib/scripting/rs_scriptlist.h \
     ui/forms/qg_snaptoolbar.h \
-    ui/forms/qg_cadtoolbarlaser.h
+    ui/forms/qg_cadtoolbarlaser.h \
+    ui/qg_laserwidget.h
 SOURCES = lib/actions/rs_actioninterface.cpp \
     lib/actions/rs_preview.cpp \
     lib/actions/rs_previewactioninterface.cpp \
@@ -299,7 +300,8 @@ SOURCES = lib/actions/rs_actioninterface.cpp \
     lib/scripting/rs_script.cpp \
     lib/scripting/rs_scriptlist.cpp \
     ui/forms/qg_snaptoolbar.cpp \
-    ui/forms/qg_cadtoolbarlaser.cpp
+    ui/forms/qg_cadtoolbarlaser.cpp \
+    ui/qg_laserwidget.cpp
 
 # ################################################################################
 # Command

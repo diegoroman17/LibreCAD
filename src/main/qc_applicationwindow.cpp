@@ -66,6 +66,7 @@
 #include "qg_actionfactory.h"
 #include "qg_blockwidget.h"
 #include "qg_layerwidget.h"
+#include "qg_laserwidget.h"
 #include "qg_librarywidget.h"
 #include "qg_commandwidget.h"
 
@@ -1692,6 +1693,7 @@ void QC_ApplicationWindow::initView() {
     RS_DEBUG->print("init view..");
     QDockWidget* dw;
     layerWidget = NULL;
+    laserWidget = NULL;
     blockWidget = NULL;
     libraryWidget = NULL;
     commandWidget = NULL;
@@ -1787,6 +1789,27 @@ void QC_ApplicationWindow::initView() {
     commandDockWindow = dw;
         addDockWidget(Qt::BottomDockWidgetArea, dw);
 
+        dw = new QDockWidget( "Laser", this);
+        dw->setObjectName ( "LaserDW" );
+        laserWidget = new QG_LaserWidget(actionHandler, dw, "Laser");
+        laserWidget->setFocusPolicy(Qt::NoFocus);
+        connect(laserWidget, SIGNAL(escape()),
+                this, SLOT(slotFocus()));
+        connect(this, SIGNAL(windowsChanged(bool)),
+                laserWidget, SLOT(setEnabled(bool)));
+        //dw->boxLayout()->addWidget(layerWidget);
+        dw->setWidget(laserWidget);
+        //dw->setFixedExtentWidth(120);
+        //dw->setFixedExtentHeight(400);
+        //dw->setFixedHeight(400);
+        // dw->setResizeEnabled(true);
+        dw->setWindowTitle(tr("Laser Juan"));
+        // dw->setCloseMode(QDockWidget::Always);
+        //dw->resize(120,mdiAreaCAD->height()/2);
+        addDockWidget (Qt::RightDockWidgetArea, dw );
+
+
+        laserDockWindow = dw;
     RS_DEBUG->print("  done");
 }
 
